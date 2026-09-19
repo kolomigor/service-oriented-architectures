@@ -1,0 +1,9 @@
+.git
+.gitignore
+.codex
+
+README.md
+TASK.md
+c4_container_diagram.png
+
+**/*_test.go

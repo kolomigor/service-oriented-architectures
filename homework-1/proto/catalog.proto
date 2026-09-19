@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package catalog;
+
+option go_package = "github.com/kolomigor/marketplace/gen/catalog";
+
+service CatalogService {
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+}
+
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  int64 price = 4;
+  string seller_id = 5;
+}
+
+message ListProductsRequest {
+  string search = 1;
+  reserved 2;
+}
+
+message ListProductsResponse {
+  repeated Product products = 1;
+}
+
+message GetProductRequest {
+  string product_id = 1;
+}
+
+message GetProductResponse {
+  Product product = 1;
+}
