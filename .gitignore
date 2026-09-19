@@ -1,24 +1,4 @@
 .DS_Store
-
-# Local configuration and secrets
-.env
-.env.*
-!.env.example
-
-# Go build and test artifacts
-bin/
-dist/
-build/
-*.test
-coverage.out
-*.prof
-
-# Logs and temporary files
-*.log
-*.tmp
-tmp/
-
-# Editor and local tool settings
 .idea/
 .vscode/
 .codex/

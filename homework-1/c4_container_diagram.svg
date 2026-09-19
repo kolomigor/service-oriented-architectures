@@ -1,0 +1,267 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2360" height="1700" viewBox="0 0 2360 1700" role="img" aria-labelledby="diagram-title diagram-desc">
+  <title id="diagram-title">Marketplace — C4 Container Diagram</title>
+  <desc id="diagram-desc">Implemented Gateway, Recommendation and Catalog skeletons; planned User, Order, Payment and Notification services, six private PostgreSQL databases, clients and RabbitMQ order-status queue. Gateway calls Order directly. Each database has one owning service.</desc>
+  <rect width="2360" height="1700" fill="#f8fafc"/>
+  <text x="55" y="55" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" fill="#0f172a">Marketplace — C4 Container Diagram</text>
+  <text x="55" y="88" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="400" fill="#475569">Target architecture and implemented service skeletons · business logic is not implemented</text>
+  <rect x="230" y="125" width="2070" height="1350" rx="24" fill="#eff6ff" stroke="#1e40af" stroke-width="2.5" stroke-dasharray="12 8"/>
+  <text x="265" y="170" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#1e3a8a">Marketplace [Software System]</text>
+  <!-- Explicit polygons keep arrowheads intact in both SVG and PNG renderers. -->
+  <g id="buyer-uses-client" data-source="buyer" data-target="buyer-client">
+    <polyline points="200,325 270,325" fill="none" stroke="#a16207" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="270,325 256,319 256,331" fill="#a16207"/>
+  </g>
+  <g id="seller-uses-client" data-source="seller" data-target="seller-client">
+    <polyline points="200,550 270,550" fill="none" stroke="#a16207" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="270,550 256,544 256,556" fill="#a16207"/>
+  </g>
+  <g id="buyer-api" data-source="buyer-client" data-target="gateway">
+    <polyline points="500,310 650,310" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-dasharray="9 6" stroke-linejoin="round"/>
+    <polygon points="650,310 636,304 636,316" fill="#0891b2"/>
+  </g>
+  <g id="seller-api" data-source="seller-client" data-target="gateway">
+    <polyline points="500,545 550,545 550,350 650,350" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-dasharray="9 6" stroke-linejoin="round"/>
+    <polygon points="650,350 636,344 636,356" fill="#0891b2"/>
+  </g>
+  <g id="personal-list" data-source="gateway" data-target="recommendation">
+    <polyline points="980,300 1300,300" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="1300,300 1286,294 1286,306" fill="#334155"/>
+  </g>
+  <g id="catalog-candidates" data-source="recommendation" data-target="catalog">
+    <polyline points="1485,400 1485,580" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="1485,580 1491,566 1479,566" fill="#334155"/>
+  </g>
+  <g id="catalog-read" data-source="gateway" data-target="catalog">
+    <polyline points="980,365 1100,365 1100,635 1300,635" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="1300,635 1286,629 1286,641" fill="#334155"/>
+  </g>
+  <g id="catalog-manage" data-source="gateway" data-target="catalog">
+    <polyline points="980,400 1050,400 1050,695 1300,695" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="9 6" stroke-linejoin="round"/>
+    <polygon points="1300,695 1286,689 1286,701" fill="#b45309"/>
+  </g>
+  <g id="user-context" data-source="gateway" data-target="user">
+    <polyline points="815,415 815,580" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="9 6" stroke-linejoin="round"/>
+    <polygon points="815,580 821,566 809,566" fill="#b45309"/>
+  </g>
+  <g id="checkout" data-source="gateway" data-target="order">
+    <polyline points="650,390 610,390 610,1145 650,1145" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="9 6" stroke-linejoin="round"/>
+    <polygon points="650,1145 636,1139 636,1151" fill="#b45309"/>
+  </g>
+  <g id="validate-items" data-source="order" data-target="catalog">
+    <polyline points="940,1060 940,1010 1180,1010 1180,735 1300,735" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="9 6" stroke-linejoin="round"/>
+    <polygon points="1300,735 1286,729 1286,741" fill="#b45309"/>
+  </g>
+  <g id="create-payment" data-source="order" data-target="payment">
+    <polyline points="980,1185 1300,1185" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="9 6" stroke-linejoin="round"/>
+    <polygon points="1300,1185 1286,1179 1286,1191" fill="#b45309"/>
+  </g>
+  <g id="publish-status" data-source="order" data-target="order-status">
+    <polyline points="980,1100 1120,1100 1120,903 1300,903" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="4 6" stroke-linejoin="round"/>
+    <polygon points="1300,903 1286,897 1286,909" fill="#7c3aed"/>
+  </g>
+  <g id="deliver-status" data-source="order-status" data-target="notification">
+    <polyline points="1670,903 1995,903 1995,1060" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="4 6" stroke-linejoin="round"/>
+    <polygon points="1995,1060 2001,1046 1989,1046" fill="#7c3aed"/>
+  </g>
+  <g id="get-contacts" data-source="notification" data-target="user">
+    <polyline points="2170,1145 2230,1145 2230,490 1210,490 1210,650 980,650" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="9 6" stroke-linejoin="round"/>
+    <polygon points="980,650 994,656 994,644" fill="#b45309"/>
+  </g>
+  <g id="recommendation-storage" data-source="recommendation" data-target="recommendation-db">
+    <polyline points="1670,315 1820,315" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round"/>
+    <polygon points="1820,315 1806,309 1806,321" fill="#64748b"/>
+  </g>
+  <g id="catalog-storage" data-source="catalog" data-target="catalog-db">
+    <polyline points="1670,665 1820,665" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round"/>
+    <polygon points="1820,665 1806,659 1806,671" fill="#64748b"/>
+  </g>
+  <g id="user-storage" data-source="user" data-target="user-db">
+    <polyline points="815,750 815,815" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round"/>
+    <polygon points="815,815 821,801 809,801" fill="#64748b"/>
+  </g>
+  <g id="order-storage" data-source="order" data-target="order-db">
+    <polyline points="815,1230 815,1290" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round"/>
+    <polygon points="815,1290 821,1276 809,1276" fill="#64748b"/>
+  </g>
+  <g id="payment-storage" data-source="payment" data-target="payment-db">
+    <polyline points="1485,1230 1485,1290" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round"/>
+    <polygon points="1485,1290 1491,1276 1479,1276" fill="#64748b"/>
+  </g>
+  <g id="notification-storage" data-source="notification" data-target="notification-db">
+    <polyline points="1995,1230 1995,1290" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round"/>
+    <polygon points="1995,1290 2001,1276 1989,1276" fill="#64748b"/>
+  </g>
+  <g id="buyer">
+    <rect x="45" y="270" width="155" height="110" rx="12" fill="#fefce8" stroke="#a16207" stroke-width="2"/>
+  <text x="122.5" y="303" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#0f172a">Buyer</text>
+  <text x="122.5" y="329" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Person]</text>
+  <text x="122.5" y="356" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#334155">shops for products</text>
+  </g>
+  <g id="seller">
+    <rect x="45" y="495" width="155" height="110" rx="12" fill="#fefce8" stroke="#a16207" stroke-width="2"/>
+  <text x="122.5" y="528" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="700" fill="#0f172a">Seller</text>
+  <text x="122.5" y="554" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Person]</text>
+  <text x="122.5" y="581" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#334155">manages listings</text>
+  </g>
+  <g id="buyer-client">
+    <rect x="270" y="235" width="230" height="170" rx="12" fill="#ecfeff" stroke="#0891b2" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="385" y="268" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Buyer Client</text>
+  <text x="385" y="300" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#1d4ed8">[Container: TypeScript UI]</text>
+  <text x="385" y="338" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">browse and checkout</text>
+  <text x="385" y="363" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">Web / Mobile · planned</text>
+  </g>
+  <g id="seller-client">
+    <rect x="270" y="460" width="230" height="170" rx="12" fill="#ecfeff" stroke="#0891b2" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="385" y="493" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Seller Client</text>
+  <text x="385" y="525" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="400" fill="#1d4ed8">[Container: TypeScript UI]</text>
+  <text x="385" y="563" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">manage products</text>
+  <text x="385" y="588" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">Web / Mobile · planned</text>
+  </g>
+  <g id="gateway">
+    <rect x="650" y="245" width="330" height="170" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+  <text x="815" y="278" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">API Gateway</text>
+  <text x="815" y="310" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: Go, gRPC]</text>
+  <text x="815" y="348" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">external API and request routing</text>
+  <text x="815" y="373" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">HTTP /health; no business data</text>
+  </g>
+  <g id="recommendation">
+    <rect x="1300" y="230" width="370" height="170" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+  <text x="1485" y="263" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Recommendation Service</text>
+  <text x="1485" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: Go, gRPC]</text>
+  <text x="1485" y="333" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">candidate ranking and profiles</text>
+  <text x="1485" y="358" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">does not own product cards</text>
+  </g>
+  <g id="catalog">
+    <rect x="1300" y="580" width="370" height="170" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
+  <text x="1485" y="613" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Catalog Service</text>
+  <text x="1485" y="645" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: Go, gRPC]</text>
+  <text x="1485" y="683" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">seller catalog and availability</text>
+  <text x="1485" y="708" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">single owner of product cards</text>
+  </g>
+  <g id="user">
+    <rect x="650" y="580" width="330" height="170" rx="12" fill="#fff7ed" stroke="#b45309" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="815" y="613" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">User Service</text>
+  <text x="815" y="645" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: Go, gRPC]</text>
+  <text x="815" y="683" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">accounts, roles and preferences</text>
+  <text x="815" y="708" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">canonical contacts · planned</text>
+  </g>
+  <g id="order">
+    <rect x="650" y="1060" width="330" height="170" rx="12" fill="#fff7ed" stroke="#b45309" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="815" y="1093" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Order Service</text>
+  <text x="815" y="1125" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: Go, gRPC]</text>
+  <text x="815" y="1163" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">checkout and order lifecycle</text>
+  <text x="815" y="1188" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">order snapshot / status · planned</text>
+  </g>
+  <g id="payment">
+    <rect x="1300" y="1060" width="370" height="170" rx="12" fill="#fff7ed" stroke="#b45309" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="1485" y="1093" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Payment Service</text>
+  <text x="1485" y="1125" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: Go, gRPC]</text>
+  <text x="1485" y="1163" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">payment operations and states</text>
+  <text x="1485" y="1188" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">separate lifecycle · planned</text>
+  </g>
+  <g id="notification">
+    <rect x="1820" y="1060" width="350" height="170" rx="12" fill="#fff7ed" stroke="#b45309" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="1995" y="1093" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Notification Service</text>
+  <text x="1995" y="1125" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: Go, AMQP client]</text>
+  <text x="1995" y="1163" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">accept jobs and retry delivery</text>
+  <text x="1995" y="1188" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">contacts via User API · planned</text>
+  </g>
+  <g id="recommendation-db">
+    <rect x="1820" y="245" width="350" height="140" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="1995" y="278" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Recommendation DB</text>
+  <text x="1995" y="304" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: PostgreSQL]</text>
+  <text x="1995" y="331" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">derived profiles and ranking features</text>
+  <text x="1995" y="356" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">planned; no product-card ownership</text>
+  </g>
+  <g id="catalog-db">
+    <rect x="1820" y="595" width="350" height="140" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="1995" y="628" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Catalog DB</text>
+  <text x="1995" y="654" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: PostgreSQL]</text>
+  <text x="1995" y="681" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">product cards and availability</text>
+  <text x="1995" y="706" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">planned</text>
+  </g>
+  <g id="user-db">
+    <rect x="650" y="815" width="330" height="140" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="815" y="848" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">User DB</text>
+  <text x="815" y="874" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: PostgreSQL]</text>
+  <text x="815" y="901" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">accounts, roles, preferences, contacts</text>
+  <text x="815" y="926" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">planned</text>
+  </g>
+  <g id="order-db">
+    <rect x="650" y="1290" width="330" height="140" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="815" y="1323" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Order DB</text>
+  <text x="815" y="1349" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: PostgreSQL]</text>
+  <text x="815" y="1376" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">orders, snapshots, status, outbox</text>
+  <text x="815" y="1401" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">planned</text>
+  </g>
+  <g id="payment-db">
+    <rect x="1300" y="1290" width="370" height="140" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="1485" y="1323" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Payment DB</text>
+  <text x="1485" y="1349" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: PostgreSQL]</text>
+  <text x="1485" y="1376" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">payment operations and states</text>
+  <text x="1485" y="1401" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">planned</text>
+  </g>
+  <g id="notification-db">
+    <rect x="1820" y="1290" width="350" height="140" rx="12" fill="#f1f5f9" stroke="#64748b" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="1995" y="1323" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">Notification DB</text>
+  <text x="1995" y="1349" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: PostgreSQL]</text>
+  <text x="1995" y="1376" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">jobs, attempts, status, event_id</text>
+  <text x="1995" y="1401" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">planned</text>
+  </g>
+  <g id="order-status">
+    <rect x="1300" y="835" width="370" height="135" rx="12" fill="#f5f3ff" stroke="#7c3aed" stroke-width="2" stroke-dasharray="8 5"/>
+  <text x="1485" y="868" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#0f172a">order-status</text>
+  <text x="1485" y="894" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#1d4ed8">[Container: RabbitMQ queue]</text>
+  <text x="1485" y="921" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">durable order-status events</text>
+  <text x="1485" y="946" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">AMQP 0-9-1 · planned</text>
+  </g>
+  <text x="235" y="309" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#a16207">uses</text>
+  <text x="235" y="534" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#a16207">uses</text>
+  <text x="575" y="273" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#0891b2">browse / order</text>
+  <text x="575" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#0891b2">gRPC / gRPC-Web</text>
+  <text x="410" y="678" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#0891b2">manage products</text>
+  <text x="410" y="700" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#0891b2">gRPC / gRPC-Web</text>
+  <text x="1140" y="280" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">personalized list</text>
+  <text x="1590" y="536" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">get candidates</text>
+  <text x="1200" y="617" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#334155">list / get</text>
+  <text x="1175" y="684" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#b45309">manage products</text>
+  <text x="915" y="505" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#b45309">accounts / roles</text>
+  <text x="915" y="527" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#b45309">preferences</text>
+  <text x="502" y="1035" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#b45309">create order</text>
+  <text x="502" y="1057" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#b45309">get status</text>
+  <text x="1262" y="786" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#b45309">validate items</text>
+  <text x="1140" y="1164" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#b45309">create / check payment</text>
+  <text x="1238" y="883" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#7c3aed">publish status</text>
+  <text x="1825" y="882" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#7c3aed">deliver event</text>
+  <text x="1870" y="469" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#b45309">get contact data by user_id</text>
+  <text x="1745" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#64748b">read / write</text>
+  <text x="1745" y="645" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#64748b">read / write</text>
+  <text x="899" y="790" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#64748b">read / write</text>
+  <text x="901" y="1268" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#64748b">read / write</text>
+  <text x="1575" y="1268" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#64748b">read / write</text>
+  <text x="2085" y="1268" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="400" fill="#64748b">read / write</text>
+  <rect x="55" y="1510" width="2245" height="145" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="80" y="1545" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#0f172a">Legend</text>
+  <g>
+    <polyline points="200,1540 285,1540" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round"/>
+    <polygon points="285,1540 271,1534 271,1546" fill="#334155"/>
+  </g>
+  <text x="300" y="1546" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">implemented sync gRPC</text>
+  <g>
+    <polyline points="705,1540 790,1540" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="9 6" stroke-linejoin="round"/>
+    <polygon points="790,1540 776,1534 776,1546" fill="#b45309"/>
+  </g>
+  <text x="805" y="1546" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">planned sync gRPC</text>
+  <g>
+    <polyline points="1200,1540 1285,1540" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="7 5" stroke-linejoin="round"/>
+    <polygon points="1285,1540 1271,1534 1271,1546" fill="#64748b"/>
+  </g>
+  <text x="1300" y="1546" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">planned sync SQL / PostgreSQL</text>
+  <g>
+    <polyline points="1790,1540 1875,1540" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="4 6" stroke-linejoin="round"/>
+    <polygon points="1875,1540 1861,1534 1861,1546" fill="#7c3aed"/>
+  </g>
+  <text x="1890" y="1546" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">planned async AMQP 0-9-1</text>
+  <text x="85" y="1597" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#334155">Blue solid frame = implemented skeleton. Dashed frames = planned components, including ALL data stores and the queue.</text>
+  <text x="85" y="1627" text-anchor="start" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="400" fill="#475569">Client transport is labelled separately; browser access needs a planned gRPC-Web/HTTP adapter. Line crossings are not connections.</text>
+</svg>
