@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package recommendation;
+
+option go_package = "github.com/kolomigor/marketplace/gen/recommendation";
+
+import "catalog.proto";
+
+service RecommendationService {
+  rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
+}
+
+message GetRecommendationsRequest {
+  string user_id = 1;
+  string search = 2;
+}
+
+message GetRecommendationsResponse {
+  repeated catalog.Product products = 1;
+}

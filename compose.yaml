@@ -1,0 +1,55 @@
+services:
+  catalog-service:
+    build:
+      context: .
+      dockerfile: services/catalog-service/Dockerfile
+    expose:
+      - "8080"
+      - "50051"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  recommendation-service:
+    build:
+      context: .
+      dockerfile: services/recommendation-service/Dockerfile
+    expose:
+      - "8080"
+      - "50053"
+    environment:
+      CATALOG_SERVICE_ADDR: catalog-service:50051
+    depends_on:
+      catalog-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    environment:
+      CATALOG_SERVICE_ADDR: catalog-service:50051
+      RECOMMENDATION_SERVICE_ADDR: recommendation-service:50053
+    ports:
+      - "8080:8080"
+      - "50052:50052"
+    depends_on:
+      catalog-service:
+        condition: service_healthy
+      recommendation-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
