@@ -362,12 +362,8 @@ Service строит производное ранжирование, Catalog Se
 homework-1/
 ├── README.md
 ├── TASK.md
-├── TODO.md
 ├── c4_container_diagram.svg
 ├── c4_container_diagram.png
-├── docs/
-│   └── audits/
-│       └── initial-review.md
 ├── compose.yaml
 ├── .dockerignore
 ├── .gitignore
