@@ -1,0 +1,7 @@
+.git
+.env
+bin
+internal/api/api.gen.go
+*.log
+.DS_Store
+__pycache__

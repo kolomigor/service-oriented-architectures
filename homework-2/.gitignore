@@ -1,0 +1,7 @@
+/internal/api/api.gen.go
+/bin/
+.env
+*.log
+coverage.out
+.DS_Store
+__pycache__/

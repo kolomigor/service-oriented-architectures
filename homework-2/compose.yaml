@@ -1,0 +1,62 @@
+name: marketplace-homework2
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-marketplace}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-marketplace-local-password}
+      POSTGRES_DB: ${POSTGRES_DB:-marketplace}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  migrate:
+    image: flyway/flyway:11.15.0
+    command: migrate
+    environment:
+      FLYWAY_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-marketplace}
+      FLYWAY_USER: ${POSTGRES_USER:-marketplace}
+      FLYWAY_PASSWORD: ${POSTGRES_PASSWORD:-marketplace-local-password}
+      FLYWAY_CONNECT_RETRIES: "30"
+    volumes:
+      - ./migrations:/flyway/sql:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+  bootstrap:
+    build: .
+    entrypoint: [/app/bootstrap]
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-marketplace}:${POSTGRES_PASSWORD:-marketplace-local-password}@postgres:5432/${POSTGRES_DB:-marketplace}?sslmode=disable
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.test}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-LocalAdmin123!}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-marketplace}:${POSTGRES_PASSWORD:-marketplace-local-password}@postgres:5432/${POSTGRES_DB:-marketplace}?sslmode=disable
+      HTTP_ADDR: :8080
+      JWT_SECRET: ${JWT_SECRET:-development-secret-replace-this-with-32-random-bytes-or-more}
+      ACCESS_TOKEN_MINUTES: ${ACCESS_TOKEN_MINUTES:-20}
+      REFRESH_TOKEN_DAYS: ${REFRESH_TOKEN_DAYS:-14}
+      ORDER_RATE_LIMIT_MINUTES: ${ORDER_RATE_LIMIT_MINUTES:-1}
+    ports:
+      - "127.0.0.1:${HTTP_PORT:-8080}:8080"
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, /app/server, -healthcheck]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+volumes:
+  postgres-data:
