@@ -1,0 +1,124 @@
+syntax = "proto3";
+
+package flight.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/kolomigor/flight-booking/gen/flight/v1;flightv1";
+
+// FlightService manages flights and seat reservations.
+//
+// Every method requires authentication; without valid credentials
+// it returns UNAUTHENTICATED.
+service FlightService {
+  // Returns SCHEDULED flights for the route, optionally on a given date.
+  //
+  // Errors:
+  //   INVALID_ARGUMENT - origin or destination is not a 3-letter IATA code.
+  rpc SearchFlights(SearchFlightsRequest) returns (SearchFlightsResponse);
+
+  // Returns a flight by ID.
+  //
+  // Errors:
+  //   INVALID_ARGUMENT - id <= 0.
+  //   NOT_FOUND        - no flight with this ID.
+  rpc GetFlight(GetFlightRequest) returns (GetFlightResponse);
+
+  // Atomically checks seat availability, decreases available_seats
+  // and creates a reservation for the booking.
+  //
+  // Idempotent by booking_id: a repeated call with the same booking_id
+  // returns the existing reservation and does not take seats again.
+  //
+  // Errors:
+  //   INVALID_ARGUMENT    - seat_count <= 0 or booking_id is empty.
+  //   NOT_FOUND           - no flight with this ID.
+  //   FAILED_PRECONDITION - flight is not SCHEDULED.
+  //   RESOURCE_EXHAUSTED  - not enough available seats.
+  //   ALREADY_EXISTS      - booking_id is already used with another flight or seat_count.
+  rpc ReserveSeats(ReserveSeatsRequest) returns (ReserveSeatsResponse);
+
+  // Releases the booking's ACTIVE reservation: returns the seats
+  // to the flight and sets status RELEASED.
+  //
+  // Idempotent: releasing an already RELEASED reservation returns it as is.
+  //
+  // Errors:
+  //   INVALID_ARGUMENT - booking_id is empty.
+  //   NOT_FOUND        - no reservation for this booking_id.
+  rpc ReleaseReservation(ReleaseReservationRequest) returns (ReleaseReservationResponse);
+}
+
+enum FlightStatus {
+  FLIGHT_STATUS_UNSPECIFIED = 0;
+  FLIGHT_STATUS_SCHEDULED = 1;
+  FLIGHT_STATUS_DEPARTED = 2;
+  FLIGHT_STATUS_CANCELLED = 3;
+  FLIGHT_STATUS_COMPLETED = 4;
+}
+
+enum ReservationStatus {
+  RESERVATION_STATUS_UNSPECIFIED = 0;
+  RESERVATION_STATUS_ACTIVE = 1;
+  RESERVATION_STATUS_RELEASED = 2;
+  RESERVATION_STATUS_EXPIRED = 3;
+}
+
+message Flight {
+  int64 id = 1;
+  string flight_number = 2; // e.g. "SU1234"
+  string airline = 3;
+  string origin = 4;        // IATA code, e.g. "SVO"
+  string destination = 5;   // IATA code, e.g. "LED"
+  google.protobuf.Timestamp departure_time = 6;
+  google.protobuf.Timestamp arrival_time = 7;
+  int32 total_seats = 8;
+  int32 available_seats = 9;
+  int64 price = 10;         // price of one seat in kopecks
+  FlightStatus status = 11;
+}
+
+message SeatReservation {
+  string booking_id = 1;
+  int64 flight_id = 2;
+  int32 seat_count = 3;
+  ReservationStatus status = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message SearchFlightsRequest {
+  string origin = 1;
+  string destination = 2;
+  // Optional. Only the date part (UTC) is used.
+  google.protobuf.Timestamp date = 3;
+}
+
+message SearchFlightsResponse {
+  repeated Flight flights = 1;
+}
+
+message GetFlightRequest {
+  int64 id = 1;
+}
+
+message GetFlightResponse {
+  Flight flight = 1;
+}
+
+message ReserveSeatsRequest {
+  int64 flight_id = 1;
+  int32 seat_count = 2;
+  string booking_id = 3;
+}
+
+message ReserveSeatsResponse {
+  SeatReservation reservation = 1;
+}
+
+message ReleaseReservationRequest {
+  string booking_id = 1;
+}
+
+message ReleaseReservationResponse {
+  SeatReservation reservation = 1;
+}
