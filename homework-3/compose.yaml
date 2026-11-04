@@ -1,0 +1,65 @@
+name: flight-booking
+services:
+  flight-db:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: flight
+      POSTGRES_PASSWORD: flight-local-password
+      POSTGRES_DB: flight
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - flight-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  flight-migrate:
+    image: flyway/flyway:11.15.0
+    command: migrate
+    environment:
+      FLYWAY_URL: jdbc:postgresql://flight-db:5432/flight
+      FLYWAY_USER: flight
+      FLYWAY_PASSWORD: flight-local-password
+      FLYWAY_CONNECT_RETRIES: "30"
+    volumes:
+      - ./migrations/flight:/flyway/sql:ro
+    depends_on:
+      flight-db:
+        condition: service_healthy
+
+  booking-db:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: booking
+      POSTGRES_PASSWORD: booking-local-password
+      POSTGRES_DB: booking
+    ports:
+      - "127.0.0.1:5435:5432"
+    volumes:
+      - booking-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  booking-migrate:
+    image: flyway/flyway:11.15.0
+    command: migrate
+    environment:
+      FLYWAY_URL: jdbc:postgresql://booking-db:5432/booking
+      FLYWAY_USER: booking
+      FLYWAY_PASSWORD: booking-local-password
+      FLYWAY_CONNECT_RETRIES: "30"
+    volumes:
+      - ./migrations/booking:/flyway/sql:ro
+    depends_on:
+      booking-db:
+        condition: service_healthy
+
+volumes:
+  flight-db-data:
+  booking-db-data:
