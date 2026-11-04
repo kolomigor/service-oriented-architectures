@@ -30,6 +30,20 @@ services:
       flight-db:
         condition: service_healthy
 
+  flight-service:
+    build:
+      context: .
+      args:
+        SERVICE: flight-service
+    environment:
+      DATABASE_URL: postgres://flight:flight-local-password@flight-db:5432/flight?sslmode=disable
+      GRPC_ADDR: :50051
+    ports:
+      - "127.0.0.1:50051:50051"
+    depends_on:
+      flight-migrate:
+        condition: service_completed_successfully
+
   booking-db:
     image: postgres:17.6-alpine
     environment:
