@@ -74,6 +74,23 @@ services:
       booking-db:
         condition: service_healthy
 
+  booking-service:
+    build:
+      context: .
+      args:
+        SERVICE: booking-service
+    environment:
+      DATABASE_URL: postgres://booking:booking-local-password@booking-db:5432/booking?sslmode=disable
+      HTTP_ADDR: :8080
+      FLIGHT_SERVICE_ADDR: flight-service:50051
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      booking-migrate:
+        condition: service_completed_successfully
+      flight-service:
+        condition: service_started
+
 volumes:
   flight-db-data:
   booking-db-data:
