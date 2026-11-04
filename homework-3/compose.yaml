@@ -38,6 +38,7 @@ services:
     environment:
       DATABASE_URL: postgres://flight:flight-local-password@flight-db:5432/flight?sslmode=disable
       GRPC_ADDR: :50051
+      FLIGHT_API_KEY: flight-local-api-key
     ports:
       - "127.0.0.1:50051:50051"
     depends_on:
@@ -83,6 +84,7 @@ services:
       DATABASE_URL: postgres://booking:booking-local-password@booking-db:5432/booking?sslmode=disable
       HTTP_ADDR: :8080
       FLIGHT_SERVICE_ADDR: flight-service:50051
+      FLIGHT_API_KEY: flight-local-api-key
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:

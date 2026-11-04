@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -37,6 +38,12 @@ func run() error {
 		return fmt.Errorf("ping database: %w", err)
 	}
 
+	// An empty key would let in requests with an empty key, so it is required.
+	apiKey := os.Getenv("FLIGHT_API_KEY")
+	if apiKey == "" {
+		return errors.New("FLIGHT_API_KEY is required")
+	}
+
 	addr := os.Getenv("GRPC_ADDR")
 	if addr == "" {
 		addr = ":50051"
@@ -46,7 +53,10 @@ func run() error {
 		return err
 	}
 
-	srv := grpc.NewServer()
+	srv := grpc.NewServer(
+		grpc.UnaryInterceptor(flight.UnaryAuthInterceptor(apiKey)),
+		grpc.StreamInterceptor(flight.StreamAuthInterceptor(apiKey)),
+	)
 	flightv1.RegisterFlightServiceServer(srv, flight.NewServer(flight.NewStore(db)))
 	// Lets tools like grpcurl discover the methods without the .proto file.
 	reflection.Register(srv)

@@ -39,10 +39,18 @@ func run() error {
 		return fmt.Errorf("ping database: %w", err)
 	}
 
+	apiKey := os.Getenv("FLIGHT_API_KEY")
+	if apiKey == "" {
+		return errors.New("FLIGHT_API_KEY is required")
+	}
+
 	// NewClient does not connect yet: the connection is opened on the first call.
 	conn, err := grpc.NewClient(os.Getenv("FLIGHT_SERVICE_ADDR"),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithChainUnaryInterceptor(booking.TimeoutInterceptor(2*time.Second)),
+		grpc.WithChainUnaryInterceptor(
+			booking.TimeoutInterceptor(2*time.Second),
+			booking.APIKeyInterceptor(apiKey),
+		),
 	)
 	if err != nil {
 		return fmt.Errorf("create flight service client: %w", err)
