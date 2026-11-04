@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -52,10 +53,13 @@ func run() error {
 			return fmt.Errorf("CACHE_TTL must be a positive duration, got %q", s)
 		}
 	}
+	// With REDIS_MASTER_NAME set, REDIS_ADDRS are Sentinel addresses and the
+	// client asks them which node is the master; otherwise it is one Redis node.
 	// Short timeouts and no retries: if Redis is down, requests fall back
 	// to the database quickly instead of waiting for seconds.
 	rdb := redis.NewUniversalClient(&redis.UniversalOptions{
-		Addrs:         []string{os.Getenv("REDIS_ADDR")},
+		Addrs:         strings.Split(os.Getenv("REDIS_ADDRS"), ","),
+		MasterName:    os.Getenv("REDIS_MASTER_NAME"),
 		DialTimeout:   300 * time.Millisecond,
 		ReadTimeout:   300 * time.Millisecond,
 		WriteTimeout:  300 * time.Millisecond,

@@ -39,26 +39,67 @@ services:
       DATABASE_URL: postgres://flight:flight-local-password@flight-db:5432/flight?sslmode=disable
       GRPC_ADDR: :50051
       FLIGHT_API_KEY: flight-local-api-key
-      REDIS_ADDR: redis:6379
+      # Sentinel mode: the client asks these sentinels where the master is.
+      REDIS_ADDRS: redis-sentinel-1:26379,redis-sentinel-2:26379,redis-sentinel-3:26379
+      REDIS_MASTER_NAME: mymaster
       CACHE_TTL: 5m
     ports:
       - "127.0.0.1:50051:50051"
     depends_on:
       flight-migrate:
         condition: service_completed_successfully
-      redis:
+      redis-sentinel-1:
+        condition: service_healthy
+      redis-sentinel-2:
+        condition: service_healthy
+      redis-sentinel-3:
         condition: service_healthy
 
-  redis:
+  # A cache must not outlive a restart: keys saved to disk could have missed
+  # invalidations while Redis was down. Hence --save "" and no AOF.
+  # replica-announce-ip makes each node report its name instead of a container IP.
+  redis-master:
     image: redis:7.4-alpine
-    # A cache must not outlive a restart: keys saved to disk could have missed
-    # invalidations while Redis was down.
-    command: [redis-server, --save, "", --appendonly, "no"]
+    command: [redis-server, --save, "", --appendonly, "no", --replica-announce-ip, redis-master]
     healthcheck:
       test: [CMD, redis-cli, ping]
       interval: 2s
       timeout: 3s
       retries: 30
+
+  redis-replica:
+    image: redis:7.4-alpine
+    command: [redis-server, --save, "", --appendonly, "no", --replica-announce-ip, redis-replica,
+              --replicaof, redis-master, "6379"]
+    depends_on:
+      redis-master:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis-sentinel-1: &redis-sentinel
+    image: redis:7.4-alpine
+    # Sentinel rewrites its config at runtime, so each one gets its own copy.
+    entrypoint: [sh, -c, "cp /etc/redis/sentinel.conf /tmp/sentinel.conf && exec redis-server /tmp/sentinel.conf --sentinel"]
+    volumes:
+      - ./redis/sentinel.conf:/etc/redis/sentinel.conf:ro
+    depends_on:
+      redis-master:
+        condition: service_healthy
+      redis-replica:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, redis-cli, -p, "26379", ping]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis-sentinel-2: *redis-sentinel
+
+  redis-sentinel-3: *redis-sentinel
 
   booking-db:
     image: postgres:17.6-alpine
