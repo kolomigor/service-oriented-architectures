@@ -166,6 +166,8 @@ func writeError(w http.ResponseWriter, err error) {
 		code, msg = http.StatusNotFound, err.Error()
 	case errors.Is(err, ErrBookingNotConfirmed):
 		code, msg = http.StatusConflict, err.Error()
+	case errors.Is(err, ErrCircuitOpen):
+		code, msg = http.StatusServiceUnavailable, err.Error()
 	default:
 		if st, ok := status.FromError(err); ok {
 			code, msg = httpStatusFromGRPC(st)

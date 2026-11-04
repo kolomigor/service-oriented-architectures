@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -44,11 +45,28 @@ func run() error {
 		return errors.New("FLIGHT_API_KEY is required")
 	}
 
+	threshold, err := envInt("CB_FAILURE_THRESHOLD", 5)
+	if err != nil {
+		return err
+	}
+	window, err := envDuration("CB_WINDOW", 10*time.Second)
+	if err != nil {
+		return err
+	}
+	openTimeout, err := envDuration("CB_OPEN_TIMEOUT", 15*time.Second)
+	if err != nil {
+		return err
+	}
+	breaker := booking.NewCircuitBreaker(threshold, window, openTimeout)
+
 	// NewClient does not connect yet: the connection is opened on the first call.
 	conn, err := grpc.NewClient(os.Getenv("FLIGHT_SERVICE_ADDR"),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		// Order matters: retry is outermost, so each attempt gets its own timeout.
+		// Order matters. The breaker is outermost: one request with all its
+		// retries counts once, and an open breaker skips retries entirely.
+		// Retry wraps timeout, so each attempt gets its own timeout.
 		grpc.WithChainUnaryInterceptor(
+			breaker.Interceptor(),
 			booking.RetryInterceptor(3, 100*time.Millisecond),
 			booking.TimeoutInterceptor(2*time.Second),
 			booking.APIKeyInterceptor(apiKey),
@@ -83,4 +101,28 @@ func run() error {
 		return err
 	}
 	return nil
+}
+
+func envInt(name string, def int) (int, error) {
+	s := os.Getenv(name)
+	if s == "" {
+		return def, nil
+	}
+	n, err := strconv.Atoi(s)
+	if err != nil || n <= 0 {
+		return 0, fmt.Errorf("%s must be a positive integer, got %q", name, s)
+	}
+	return n, nil
+}
+
+func envDuration(name string, def time.Duration) (time.Duration, error) {
+	s := os.Getenv(name)
+	if s == "" {
+		return def, nil
+	}
+	d, err := time.ParseDuration(s)
+	if err != nil || d <= 0 {
+		return 0, fmt.Errorf("%s must be a positive duration, got %q", name, s)
+	}
+	return d, nil
 }

@@ -141,6 +141,10 @@ services:
       HTTP_ADDR: :8080
       FLIGHT_SERVICE_ADDR: flight-service:50051
       FLIGHT_API_KEY: flight-local-api-key
+      # Circuit breaker: open after 5 failures within 10s, stay open for 15s.
+      CB_FAILURE_THRESHOLD: "5"
+      CB_WINDOW: 10s
+      CB_OPEN_TIMEOUT: 15s
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:
