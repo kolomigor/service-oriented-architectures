@@ -47,7 +47,9 @@ func run() error {
 	// NewClient does not connect yet: the connection is opened on the first call.
 	conn, err := grpc.NewClient(os.Getenv("FLIGHT_SERVICE_ADDR"),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		// Order matters: retry is outermost, so each attempt gets its own timeout.
 		grpc.WithChainUnaryInterceptor(
+			booking.RetryInterceptor(3, 100*time.Millisecond),
 			booking.TimeoutInterceptor(2*time.Second),
 			booking.APIKeyInterceptor(apiKey),
 		),
