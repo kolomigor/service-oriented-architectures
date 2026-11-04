@@ -196,6 +196,19 @@ func (s *Store) ReleaseReservation(ctx context.Context, bookingID string) (Reser
 	return r, tx.Commit(ctx)
 }
 
+// UpdateFlight sets the price and/or status; a nil argument leaves the field unchanged.
+func (s *Store) UpdateFlight(ctx context.Context, id int64, price *int64, status *string) (Flight, error) {
+	f, err := scanFlight(s.db.QueryRow(ctx, `WITH f AS (
+			UPDATE flights SET price = COALESCE($2, price), status = COALESCE($3::flight_status, status)
+			WHERE id = $1 RETURNING *
+		)
+		SELECT `+flightColumns+` FROM f JOIN airlines a ON a.code = f.airline_code`, id, price, status))
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Flight{}, ErrFlightNotFound
+	}
+	return f, err
+}
+
 func isUniqueViolation(err error) bool {
 	var pgErr *pgconn.PgError
 	return errors.As(err, &pgErr) && pgErr.Code == "23505"

@@ -18,14 +18,23 @@ import (
 
 var iataCode = regexp.MustCompile(`^[A-Z]{3}$`)
 
+// flightStore is implemented by Store and by CachedStore, which wraps it.
+type flightStore interface {
+	SearchFlights(ctx context.Context, origin, destination string, day *time.Time) ([]Flight, error)
+	GetFlight(ctx context.Context, id int64) (Flight, error)
+	ReserveSeats(ctx context.Context, flightID int64, seatCount int32, bookingID string) (Reservation, error)
+	ReleaseReservation(ctx context.Context, bookingID string) (Reservation, error)
+	UpdateFlight(ctx context.Context, id int64, price *int64, status *string) (Flight, error)
+}
+
 // Server implements flightv1.FlightServiceServer: it validates requests,
 // calls the store and converts results and errors to gRPC.
 type Server struct {
 	flightv1.UnimplementedFlightServiceServer
-	store *Store
+	store flightStore
 }
 
-func NewServer(store *Store) *Server {
+func NewServer(store flightStore) *Server {
 	return &Server{store: store}
 }
 
@@ -96,6 +105,32 @@ func (s *Server) ReleaseReservation(ctx context.Context, req *flightv1.ReleaseRe
 		return nil, toStatus(err)
 	}
 	return &flightv1.ReleaseReservationResponse{Reservation: toProtoReservation(r)}, nil
+}
+
+func (s *Server) UpdateFlight(ctx context.Context, req *flightv1.UpdateFlightRequest) (*flightv1.UpdateFlightResponse, error) {
+	if req.GetId() <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "id must be positive")
+	}
+	if req.Price != nil && req.GetPrice() <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "price must be positive")
+	}
+	if _, ok := flightv1.FlightStatus_name[int32(req.GetStatus())]; !ok {
+		return nil, status.Error(codes.InvalidArgument, "unknown status")
+	}
+	var newStatus *string
+	if req.GetStatus() != flightv1.FlightStatus_FLIGHT_STATUS_UNSPECIFIED {
+		name := strings.TrimPrefix(req.GetStatus().String(), "FLIGHT_STATUS_")
+		newStatus = &name
+	}
+	if req.Price == nil && newStatus == nil {
+		return nil, status.Error(codes.InvalidArgument, "nothing to update")
+	}
+
+	f, err := s.store.UpdateFlight(ctx, req.GetId(), req.Price, newStatus)
+	if err != nil {
+		return nil, toStatus(err)
+	}
+	return &flightv1.UpdateFlightResponse{Flight: toProtoFlight(f)}, nil
 }
 
 // toStatus maps store errors to the gRPC codes described in flight.proto.

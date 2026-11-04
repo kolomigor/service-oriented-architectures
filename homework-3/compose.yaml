@@ -39,11 +39,26 @@ services:
       DATABASE_URL: postgres://flight:flight-local-password@flight-db:5432/flight?sslmode=disable
       GRPC_ADDR: :50051
       FLIGHT_API_KEY: flight-local-api-key
+      REDIS_ADDR: redis:6379
+      CACHE_TTL: 5m
     ports:
       - "127.0.0.1:50051:50051"
     depends_on:
       flight-migrate:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7.4-alpine
+    # A cache must not outlive a restart: keys saved to disk could have missed
+    # invalidations while Redis was down.
+    command: [redis-server, --save, "", --appendonly, "no"]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 3s
+      retries: 30
 
   booking-db:
     image: postgres:17.6-alpine

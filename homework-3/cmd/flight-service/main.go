@@ -9,8 +9,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -44,6 +46,24 @@ func run() error {
 		return errors.New("FLIGHT_API_KEY is required")
 	}
 
+	cacheTTL := 5 * time.Minute
+	if s := os.Getenv("CACHE_TTL"); s != "" {
+		if cacheTTL, err = time.ParseDuration(s); err != nil || cacheTTL <= 0 {
+			return fmt.Errorf("CACHE_TTL must be a positive duration, got %q", s)
+		}
+	}
+	// Short timeouts and no retries: if Redis is down, requests fall back
+	// to the database quickly instead of waiting for seconds.
+	rdb := redis.NewUniversalClient(&redis.UniversalOptions{
+		Addrs:         []string{os.Getenv("REDIS_ADDR")},
+		DialTimeout:   300 * time.Millisecond,
+		ReadTimeout:   300 * time.Millisecond,
+		WriteTimeout:  300 * time.Millisecond,
+		MaxRetries:    -1,
+		DialerRetries: 1,
+	})
+	defer rdb.Close()
+
 	addr := os.Getenv("GRPC_ADDR")
 	if addr == "" {
 		addr = ":50051"
@@ -57,7 +77,8 @@ func run() error {
 		grpc.UnaryInterceptor(flight.UnaryAuthInterceptor(apiKey)),
 		grpc.StreamInterceptor(flight.StreamAuthInterceptor(apiKey)),
 	)
-	flightv1.RegisterFlightServiceServer(srv, flight.NewServer(flight.NewStore(db)))
+	store := flight.NewCachedStore(flight.NewStore(db), rdb, cacheTTL)
+	flightv1.RegisterFlightServiceServer(srv, flight.NewServer(store))
 	// Lets tools like grpcurl discover the methods without the .proto file.
 	reflection.Register(srv)
 

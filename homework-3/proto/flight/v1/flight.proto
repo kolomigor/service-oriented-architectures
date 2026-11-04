@@ -47,6 +47,14 @@ service FlightService {
   //   INVALID_ARGUMENT - booking_id is empty.
   //   NOT_FOUND        - no reservation for this booking_id.
   rpc ReleaseReservation(ReleaseReservationRequest) returns (ReleaseReservationResponse);
+
+  // Updates the flight's price and/or status; fields that are not set stay
+  // unchanged. Existing bookings keep the price they were made at.
+  //
+  // Errors:
+  //   INVALID_ARGUMENT - id <= 0, price <= 0, unknown status or nothing to update.
+  //   NOT_FOUND        - no flight with this ID.
+  rpc UpdateFlight(UpdateFlightRequest) returns (UpdateFlightResponse);
 }
 
 enum FlightStatus {
@@ -121,4 +129,14 @@ message ReleaseReservationRequest {
 
 message ReleaseReservationResponse {
   SeatReservation reservation = 1;
+}
+
+message UpdateFlightRequest {
+  int64 id = 1;
+  optional int64 price = 2; // kopecks; not set = unchanged
+  FlightStatus status = 3;  // FLIGHT_STATUS_UNSPECIFIED = unchanged
+}
+
+message UpdateFlightResponse {
+  Flight flight = 1;
 }

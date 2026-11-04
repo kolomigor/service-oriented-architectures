@@ -23,6 +23,7 @@ const (
 	FlightService_GetFlight_FullMethodName          = "/flight.v1.FlightService/GetFlight"
 	FlightService_ReserveSeats_FullMethodName       = "/flight.v1.FlightService/ReserveSeats"
 	FlightService_ReleaseReservation_FullMethodName = "/flight.v1.FlightService/ReleaseReservation"
+	FlightService_UpdateFlight_FullMethodName       = "/flight.v1.FlightService/UpdateFlight"
 )
 
 // FlightServiceClient is the client API for FlightService service.
@@ -71,6 +72,14 @@ type FlightServiceClient interface {
 	//	INVALID_ARGUMENT - booking_id is empty.
 	//	NOT_FOUND        - no reservation for this booking_id.
 	ReleaseReservation(ctx context.Context, in *ReleaseReservationRequest, opts ...grpc.CallOption) (*ReleaseReservationResponse, error)
+	// Updates the flight's price and/or status; fields that are not set stay
+	// unchanged. Existing bookings keep the price they were made at.
+	//
+	// Errors:
+	//
+	//	INVALID_ARGUMENT - id <= 0, price <= 0, unknown status or nothing to update.
+	//	NOT_FOUND        - no flight with this ID.
+	UpdateFlight(ctx context.Context, in *UpdateFlightRequest, opts ...grpc.CallOption) (*UpdateFlightResponse, error)
 }
 
 type flightServiceClient struct {
@@ -115,6 +124,16 @@ func (c *flightServiceClient) ReleaseReservation(ctx context.Context, in *Releas
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ReleaseReservationResponse)
 	err := c.cc.Invoke(ctx, FlightService_ReleaseReservation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *flightServiceClient) UpdateFlight(ctx context.Context, in *UpdateFlightRequest, opts ...grpc.CallOption) (*UpdateFlightResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateFlightResponse)
+	err := c.cc.Invoke(ctx, FlightService_UpdateFlight_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -167,6 +186,14 @@ type FlightServiceServer interface {
 	//	INVALID_ARGUMENT - booking_id is empty.
 	//	NOT_FOUND        - no reservation for this booking_id.
 	ReleaseReservation(context.Context, *ReleaseReservationRequest) (*ReleaseReservationResponse, error)
+	// Updates the flight's price and/or status; fields that are not set stay
+	// unchanged. Existing bookings keep the price they were made at.
+	//
+	// Errors:
+	//
+	//	INVALID_ARGUMENT - id <= 0, price <= 0, unknown status or nothing to update.
+	//	NOT_FOUND        - no flight with this ID.
+	UpdateFlight(context.Context, *UpdateFlightRequest) (*UpdateFlightResponse, error)
 	mustEmbedUnimplementedFlightServiceServer()
 }
 
@@ -188,6 +215,9 @@ func (UnimplementedFlightServiceServer) ReserveSeats(context.Context, *ReserveSe
 }
 func (UnimplementedFlightServiceServer) ReleaseReservation(context.Context, *ReleaseReservationRequest) (*ReleaseReservationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ReleaseReservation not implemented")
+}
+func (UnimplementedFlightServiceServer) UpdateFlight(context.Context, *UpdateFlightRequest) (*UpdateFlightResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateFlight not implemented")
 }
 func (UnimplementedFlightServiceServer) mustEmbedUnimplementedFlightServiceServer() {}
 func (UnimplementedFlightServiceServer) testEmbeddedByValue()                       {}
@@ -282,6 +312,24 @@ func _FlightService_ReleaseReservation_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FlightService_UpdateFlight_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateFlightRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FlightServiceServer).UpdateFlight(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FlightService_UpdateFlight_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FlightServiceServer).UpdateFlight(ctx, req.(*UpdateFlightRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FlightService_ServiceDesc is the grpc.ServiceDesc for FlightService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +352,10 @@ var FlightService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReleaseReservation",
 			Handler:    _FlightService_ReleaseReservation_Handler,
+		},
+		{
+			MethodName: "UpdateFlight",
+			Handler:    _FlightService_UpdateFlight_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -714,6 +714,110 @@ func (x *ReleaseReservationResponse) GetReservation() *SeatReservation {
 	return nil
 }
 
+type UpdateFlightRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Price         *int64                 `protobuf:"varint,2,opt,name=price,proto3,oneof" json:"price,omitempty"`                         // kopecks; not set = unchanged
+	Status        FlightStatus           `protobuf:"varint,3,opt,name=status,proto3,enum=flight.v1.FlightStatus" json:"status,omitempty"` // FLIGHT_STATUS_UNSPECIFIED = unchanged
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateFlightRequest) Reset() {
+	*x = UpdateFlightRequest{}
+	mi := &file_flight_v1_flight_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateFlightRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateFlightRequest) ProtoMessage() {}
+
+func (x *UpdateFlightRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_flight_v1_flight_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateFlightRequest.ProtoReflect.Descriptor instead.
+func (*UpdateFlightRequest) Descriptor() ([]byte, []int) {
+	return file_flight_v1_flight_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *UpdateFlightRequest) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UpdateFlightRequest) GetPrice() int64 {
+	if x != nil && x.Price != nil {
+		return *x.Price
+	}
+	return 0
+}
+
+func (x *UpdateFlightRequest) GetStatus() FlightStatus {
+	if x != nil {
+		return x.Status
+	}
+	return FlightStatus_FLIGHT_STATUS_UNSPECIFIED
+}
+
+type UpdateFlightResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Flight        *Flight                `protobuf:"bytes,1,opt,name=flight,proto3" json:"flight,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateFlightResponse) Reset() {
+	*x = UpdateFlightResponse{}
+	mi := &file_flight_v1_flight_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateFlightResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateFlightResponse) ProtoMessage() {}
+
+func (x *UpdateFlightResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_flight_v1_flight_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateFlightResponse.ProtoReflect.Descriptor instead.
+func (*UpdateFlightResponse) Descriptor() ([]byte, []int) {
+	return file_flight_v1_flight_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *UpdateFlightResponse) GetFlight() *Flight {
+	if x != nil {
+		return x.Flight
+	}
+	return nil
+}
+
 var File_flight_v1_flight_proto protoreflect.FileDescriptor
 
 const file_flight_v1_flight_proto_rawDesc = "" +
@@ -764,7 +868,14 @@ const file_flight_v1_flight_proto_rawDesc = "" +
 	"\n" +
 	"booking_id\x18\x01 \x01(\tR\tbookingId\"Z\n" +
 	"\x1aReleaseReservationResponse\x12<\n" +
-	"\vreservation\x18\x01 \x01(\v2\x1a.flight.v1.SeatReservationR\vreservation*\xa0\x01\n" +
+	"\vreservation\x18\x01 \x01(\v2\x1a.flight.v1.SeatReservationR\vreservation\"{\n" +
+	"\x13UpdateFlightRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
+	"\x05price\x18\x02 \x01(\x03H\x00R\x05price\x88\x01\x01\x12/\n" +
+	"\x06status\x18\x03 \x01(\x0e2\x17.flight.v1.FlightStatusR\x06statusB\b\n" +
+	"\x06_price\"A\n" +
+	"\x14UpdateFlightResponse\x12)\n" +
+	"\x06flight\x18\x01 \x01(\v2\x11.flight.v1.FlightR\x06flight*\xa0\x01\n" +
 	"\fFlightStatus\x12\x1d\n" +
 	"\x19FLIGHT_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17FLIGHT_STATUS_SCHEDULED\x10\x01\x12\x1a\n" +
@@ -775,12 +886,13 @@ const file_flight_v1_flight_proto_rawDesc = "" +
 	"\x1eRESERVATION_STATUS_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19RESERVATION_STATUS_ACTIVE\x10\x01\x12\x1f\n" +
 	"\x1bRESERVATION_STATUS_RELEASED\x10\x02\x12\x1e\n" +
-	"\x1aRESERVATION_STATUS_EXPIRED\x10\x032\xdf\x02\n" +
+	"\x1aRESERVATION_STATUS_EXPIRED\x10\x032\xb0\x03\n" +
 	"\rFlightService\x12R\n" +
 	"\rSearchFlights\x12\x1f.flight.v1.SearchFlightsRequest\x1a .flight.v1.SearchFlightsResponse\x12F\n" +
 	"\tGetFlight\x12\x1b.flight.v1.GetFlightRequest\x1a\x1c.flight.v1.GetFlightResponse\x12O\n" +
 	"\fReserveSeats\x12\x1e.flight.v1.ReserveSeatsRequest\x1a\x1f.flight.v1.ReserveSeatsResponse\x12a\n" +
-	"\x12ReleaseReservation\x12$.flight.v1.ReleaseReservationRequest\x1a%.flight.v1.ReleaseReservationResponseB<Z:github.com/kolomigor/flight-booking/gen/flight/v1;flightv1b\x06proto3"
+	"\x12ReleaseReservation\x12$.flight.v1.ReleaseReservationRequest\x1a%.flight.v1.ReleaseReservationResponse\x12O\n" +
+	"\fUpdateFlight\x12\x1e.flight.v1.UpdateFlightRequest\x1a\x1f.flight.v1.UpdateFlightResponseB<Z:github.com/kolomigor/flight-booking/gen/flight/v1;flightv1b\x06proto3"
 
 var (
 	file_flight_v1_flight_proto_rawDescOnce sync.Once
@@ -795,7 +907,7 @@ func file_flight_v1_flight_proto_rawDescGZIP() []byte {
 }
 
 var file_flight_v1_flight_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_flight_v1_flight_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_flight_v1_flight_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_flight_v1_flight_proto_goTypes = []any{
 	(FlightStatus)(0),                  // 0: flight.v1.FlightStatus
 	(ReservationStatus)(0),             // 1: flight.v1.ReservationStatus
@@ -809,32 +921,38 @@ var file_flight_v1_flight_proto_goTypes = []any{
 	(*ReserveSeatsResponse)(nil),       // 9: flight.v1.ReserveSeatsResponse
 	(*ReleaseReservationRequest)(nil),  // 10: flight.v1.ReleaseReservationRequest
 	(*ReleaseReservationResponse)(nil), // 11: flight.v1.ReleaseReservationResponse
-	(*timestamppb.Timestamp)(nil),      // 12: google.protobuf.Timestamp
+	(*UpdateFlightRequest)(nil),        // 12: flight.v1.UpdateFlightRequest
+	(*UpdateFlightResponse)(nil),       // 13: flight.v1.UpdateFlightResponse
+	(*timestamppb.Timestamp)(nil),      // 14: google.protobuf.Timestamp
 }
 var file_flight_v1_flight_proto_depIdxs = []int32{
-	12, // 0: flight.v1.Flight.departure_time:type_name -> google.protobuf.Timestamp
-	12, // 1: flight.v1.Flight.arrival_time:type_name -> google.protobuf.Timestamp
+	14, // 0: flight.v1.Flight.departure_time:type_name -> google.protobuf.Timestamp
+	14, // 1: flight.v1.Flight.arrival_time:type_name -> google.protobuf.Timestamp
 	0,  // 2: flight.v1.Flight.status:type_name -> flight.v1.FlightStatus
 	1,  // 3: flight.v1.SeatReservation.status:type_name -> flight.v1.ReservationStatus
-	12, // 4: flight.v1.SeatReservation.created_at:type_name -> google.protobuf.Timestamp
-	12, // 5: flight.v1.SearchFlightsRequest.date:type_name -> google.protobuf.Timestamp
+	14, // 4: flight.v1.SeatReservation.created_at:type_name -> google.protobuf.Timestamp
+	14, // 5: flight.v1.SearchFlightsRequest.date:type_name -> google.protobuf.Timestamp
 	2,  // 6: flight.v1.SearchFlightsResponse.flights:type_name -> flight.v1.Flight
 	2,  // 7: flight.v1.GetFlightResponse.flight:type_name -> flight.v1.Flight
 	3,  // 8: flight.v1.ReserveSeatsResponse.reservation:type_name -> flight.v1.SeatReservation
 	3,  // 9: flight.v1.ReleaseReservationResponse.reservation:type_name -> flight.v1.SeatReservation
-	4,  // 10: flight.v1.FlightService.SearchFlights:input_type -> flight.v1.SearchFlightsRequest
-	6,  // 11: flight.v1.FlightService.GetFlight:input_type -> flight.v1.GetFlightRequest
-	8,  // 12: flight.v1.FlightService.ReserveSeats:input_type -> flight.v1.ReserveSeatsRequest
-	10, // 13: flight.v1.FlightService.ReleaseReservation:input_type -> flight.v1.ReleaseReservationRequest
-	5,  // 14: flight.v1.FlightService.SearchFlights:output_type -> flight.v1.SearchFlightsResponse
-	7,  // 15: flight.v1.FlightService.GetFlight:output_type -> flight.v1.GetFlightResponse
-	9,  // 16: flight.v1.FlightService.ReserveSeats:output_type -> flight.v1.ReserveSeatsResponse
-	11, // 17: flight.v1.FlightService.ReleaseReservation:output_type -> flight.v1.ReleaseReservationResponse
-	14, // [14:18] is the sub-list for method output_type
-	10, // [10:14] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	0,  // 10: flight.v1.UpdateFlightRequest.status:type_name -> flight.v1.FlightStatus
+	2,  // 11: flight.v1.UpdateFlightResponse.flight:type_name -> flight.v1.Flight
+	4,  // 12: flight.v1.FlightService.SearchFlights:input_type -> flight.v1.SearchFlightsRequest
+	6,  // 13: flight.v1.FlightService.GetFlight:input_type -> flight.v1.GetFlightRequest
+	8,  // 14: flight.v1.FlightService.ReserveSeats:input_type -> flight.v1.ReserveSeatsRequest
+	10, // 15: flight.v1.FlightService.ReleaseReservation:input_type -> flight.v1.ReleaseReservationRequest
+	12, // 16: flight.v1.FlightService.UpdateFlight:input_type -> flight.v1.UpdateFlightRequest
+	5,  // 17: flight.v1.FlightService.SearchFlights:output_type -> flight.v1.SearchFlightsResponse
+	7,  // 18: flight.v1.FlightService.GetFlight:output_type -> flight.v1.GetFlightResponse
+	9,  // 19: flight.v1.FlightService.ReserveSeats:output_type -> flight.v1.ReserveSeatsResponse
+	11, // 20: flight.v1.FlightService.ReleaseReservation:output_type -> flight.v1.ReleaseReservationResponse
+	13, // 21: flight.v1.FlightService.UpdateFlight:output_type -> flight.v1.UpdateFlightResponse
+	17, // [17:22] is the sub-list for method output_type
+	12, // [12:17] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_flight_v1_flight_proto_init() }
@@ -842,13 +960,14 @@ func file_flight_v1_flight_proto_init() {
 	if File_flight_v1_flight_proto != nil {
 		return
 	}
+	file_flight_v1_flight_proto_msgTypes[10].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_flight_v1_flight_proto_rawDesc), len(file_flight_v1_flight_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
