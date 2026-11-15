@@ -1,0 +1,34 @@
+@startuml
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 13
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+hide footbox
+title Вариант 1. Успешная доставка push
+autonumber
+participant "Сервис банка" as Bank
+participant "API" as API
+database "PostgreSQL" as DB
+participant "Worker" as W
+participant "Push-провайдер" as Push
+participant "Приложение" as App
+
+Bank -> API: Отправить событие (event_id)
+API -> DB: BEGIN: уведомление + задание\nпроверка уникальности event_id
+DB --> API: COMMIT подтверждён
+API --> Bank: 202 + notification_id
+
+W -> DB: Короткая транзакция:\nвзять задание SKIP LOCKED,\nпроверить настройки, записать попытку + lease
+DB --> W: COMMIT; attempt_id
+note right of W: Сетевой вызов вне\nтранзакции БД
+W -> Push: Отправить push\n(notification_id, attempt_id)
+Push --> W: Принято провайдером
+W -> DB: WAITING; срок = начало попытки + 5 с\nтолько если ещё не DELIVERED
+
+Push -> App: Push с notification_id и attempt_id
+App -> API: Подтверждение получения\n(авторизованный ACK с attempt_id)
+API -> DB: DELIVERED; завершить задание\nповторный ACK безопасен
+DB --> API: COMMIT
+API --> App: 200
+note over API,App: Получение сообщения приложением\nне означает прочтение человеком.
+@enduml

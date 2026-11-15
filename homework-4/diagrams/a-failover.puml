@@ -1,0 +1,32 @@
+@startuml
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 13
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+hide footbox
+title Вариант 1. Нет подтверждения push — переход к SMS
+autonumber
+participant "Worker" as W
+database "PostgreSQL" as DB
+participant "SMS-провайдер" as SMS
+participant "API" as API
+participant "Push / приложение" as Push
+
+note over W,DB: Push уже отправлен. Состояние WAITING.\nС начала попытки прошло 5 с без подтверждения: исход неизвестен.
+W -> DB: Взять наступившее задание;\nпроверить, что нет DELIVERED;\nсохранить попытку SMS + lease
+DB --> W: COMMIT; attempt_id для SMS
+W -> SMS: Отправить SMS\nclient_reference = attempt_id
+SMS --> W: Принято провайдером
+W -> DB: WAITING; срок = начало попытки SMS + 20 с\nтолько если ещё не DELIVERED
+SMS -> API: Подписанный callback: доставлено\n(attempt_id + provider_message_id)
+API -> DB: Проверить попытку; DELIVERED;\nостановить будущие отправки
+DB --> API: COMMIT
+API --> SMS: 200
+
+opt Push пришёл позднее
+  Push -> API: Поздний ACK того же уведомления\nс attempt_id push
+  API -> DB: Дополнить историю;\nсохранить DELIVERED
+  API --> Push: 200
+end
+note over W,Push: Поздний push после SMS возможен.\nПлатформа отменяет будущие задания,\nно не может отозвать сообщение из внешнего канала.
+@enduml

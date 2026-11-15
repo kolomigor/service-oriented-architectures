@@ -1,0 +1,33 @@
+@startuml
+!pragma layout smetana
+!include <C4/C4_Container>
+LAYOUT_TOP_DOWN()
+skinparam defaultFontName SansSerif
+skinparam dpi 120
+title Вариант 2. RabbitMQ и PostgreSQL
+
+System_Ext(app, "Приложение банка", "Получает push и подтверждает получение")
+System_Ext(bank, "Сервисы банка", "Переводы, платежи, продукты, кампании")
+System_Ext(providers, "Провайдеры доставки", "Push: FCM/APNs; SMS; email")
+
+Boundary(platform, "", "") {
+  Container(api, "Notification API", "Go, HTTPS/JSON", "Приём, настройки, статусы и подтверждения доставки")
+  ContainerDb(db, "Состояние и outbox", "PostgreSQL 17; 3 узла", "Sync >= 1 реплики. Уведомления, попытки, настройки, будущие задания и outbox")
+  Container(dispatcher, "Dispatcher", "Go", "Публикует outbox и наступившие задания; ждёт publisher confirm")
+  ContainerQueue(broker, "Очереди заданий", "RabbitMQ 4, quorum queues", "Отдельные critical/background очереди; 3 узла")
+  Container(workers, "Delivery Workers", "Go; отдельные пулы", "Проверяют актуальность задания, отправляют и сохраняют результат")
+}
+
+Rel(bank, api, "Запрашивает отправку / статус", "HTTPS")
+Rel(app, api, "Настройки и подтверждение push", "HTTPS")
+Rel(api, db, "Атомарно пишет уведомление и outbox", "SQL")
+Rel(dispatcher, db, "Читает задания, отмечает публикацию", "SQL")
+Rel(dispatcher, broker, "Публикует; получает confirm", "AMQP")
+Rel(broker, workers, "Выдаёт задания; получает ack", "AMQP")
+Rel(workers, db, "Проверяют и сохраняют состояние", "SQL")
+Rel(workers, providers, "Отправляют уведомления", "HTTPS")
+Rel(providers, api, "Сообщают результат SMS/email", "HTTPS callback")
+
+caption Пунктирная рамка — Notification Platform.\nВнешние провайдеры доставляют push в приложение, SMS/email — клиенту.
+SHOW_LEGEND()
+@enduml

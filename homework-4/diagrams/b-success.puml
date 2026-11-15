@@ -1,0 +1,39 @@
+@startuml
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 12
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+hide footbox
+title Вариант 2. Успешная доставка push через очередь
+autonumber
+participant "Сервис банка" as Bank
+participant "API" as API
+database "PostgreSQL" as DB
+participant "Dispatcher" as D
+queue "RabbitMQ" as Q
+participant "Worker" as W
+participant "Push / приложение" as Push
+
+Bank -> API: Отправить событие (event_id)
+API -> DB: Уведомление + outbox\nв одной транзакции
+DB --> API: COMMIT
+API --> Bank: 202 + notification_id
+D -> DB: Прочитать outbox
+DB --> D: task_id + версия задания
+D -> Q: Опубликовать задание
+Q --> D: Publisher confirm
+D -> DB: Отметить публикацию
+Q -> W: Выдать задание
+W -> DB: Проверить версию и состояние;\nзахватить задание, записать попытку + lease
+DB --> W: COMMIT; attempt_id
+W -> Push: Отправить push\n(notification_id, attempt_id)
+Push --> W: Принято провайдером
+W -> DB: WAITING; срок = начало попытки + 5 с;\nсохранить будущее задание\nесли ещё не DELIVERED
+DB --> W: COMMIT
+W -> Q: Manual ack текущего задания
+note over Q,W: Ack означает, что шаг сохранён в БД.\nОн не означает доставку пользователю.
+Push -> API: Авторизованный ACK приложения\nс attempt_id
+API -> DB: DELIVERED; отменить будущую работу
+DB --> API: COMMIT
+API --> Push: 200
+@enduml
