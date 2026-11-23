@@ -1,0 +1,8 @@
+*
+!analytics/
+!analytics/**
+!producer/
+!producer/**
+!schemas/
+!schemas/**
+**/__pycache__/

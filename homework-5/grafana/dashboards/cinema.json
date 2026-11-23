@@ -1,0 +1,100 @@
+{
+  "uid": "cinema-analytics",
+  "title": "Online Cinema",
+  "schemaVersion": 41,
+  "timezone": "utc",
+  "refresh": "30s",
+  "time": {
+    "from": "now-14d/d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Retention Cohort Heatmap",
+      "description": "Share of each cohort active on days 0–7 after its first viewing. A dash marks a day that has not yet been observed.",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 12 },
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "cinema-clickhouse" },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": "/^Day [0-7]$/" },
+            "properties": [
+              { "id": "unit", "value": "percentunit" },
+              { "id": "decimals", "value": 0 },
+              { "id": "color", "value": { "mode": "thresholds" } },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "#E7F0F5", "value": null },
+                    { "color": "#B8DBE7", "value": 0.25 },
+                    { "color": "#73BCCF", "value": 0.5 },
+                    { "color": "#2B8DA6", "value": 0.75 }
+                  ]
+                }
+              },
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "pluginVersion": "4.15.0",
+          "rawSql": "SELECT\n  toString(metric_date) AS Cohort,\n  maxOrNullIf(value, dimension = '0') AS `Day 0`,\n  maxOrNullIf(value, dimension = '1') AS `Day 1`,\n  maxOrNullIf(value, dimension = '2') AS `Day 2`,\n  maxOrNullIf(value, dimension = '3') AS `Day 3`,\n  maxOrNullIf(value, dimension = '4') AS `Day 4`,\n  maxOrNullIf(value, dimension = '5') AS `Day 5`,\n  maxOrNullIf(value, dimension = '6') AS `Day 6`,\n  maxOrNullIf(value, dimension = '7') AS `Day 7`\nFROM cinema.daily_metrics\nWHERE metric_name = 'retention' AND metric_date BETWEEN toDate32($__fromTime_ms) AND toDate32($__toTime_ms)\nGROUP BY metric_date\nHAVING `Day 0` IS NOT NULL\nORDER BY metric_date DESC"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Daily Active Users",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 9 },
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "cinema-clickhouse" },
+      "fieldConfig": { "defaults": { "min": 0, "decimals": 0 }, "overrides": [] },
+      "options": { "legend": { "showLegend": false } },
+      "targets": [
+        {
+          "refId": "A",
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "pluginVersion": "4.15.0",
+          "rawSql": "SELECT toDateTime64(metric_date, 3, 'UTC') AS time, value AS DAU\nFROM cinema.daily_metrics\nWHERE metric_name = 'dau' AND metric_date BETWEEN toDate32($__fromTime_ms) AND toDate32($__toTime_ms)\nORDER BY time"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Viewing Conversion",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 9 },
+      "datasource": { "type": "grafana-clickhouse-datasource", "uid": "cinema-clickhouse" },
+      "fieldConfig": { "defaults": { "min": 0, "unit": "percentunit" }, "overrides": [] },
+      "options": { "legend": { "showLegend": false } },
+      "targets": [
+        {
+          "refId": "A",
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "pluginVersion": "4.15.0",
+          "rawSql": "SELECT toDateTime64(metric_date, 3, 'UTC') AS time, value AS Conversion\nFROM cinema.daily_metrics\nWHERE metric_name = 'conversion' AND metric_date BETWEEN toDate32($__fromTime_ms) AND toDate32($__toTime_ms)\nORDER BY time"
+        }
+      ]
+    }
+  ]
+}
