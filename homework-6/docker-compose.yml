@@ -1,0 +1,172 @@
+name: smart-warehouse
+
+x-cassandra: &cassandra
+  image: cassandra:5.0
+  restart: unless-stopped
+  environment:
+    CASSANDRA_CLUSTER_NAME: warehouse
+    CASSANDRA_SEEDS: cassandra-1
+    CASSANDRA_DC: datacenter1
+    CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+    MAX_HEAP_SIZE: 512M
+    HEAP_NEWSIZE: 128M
+    JVM_EXTRA_OPTS: -XX:ActiveProcessorCount=2
+  healthcheck:
+    test: ["CMD", "cqlsh", "-e", "SELECT release_version FROM system.local"]
+    interval: 8s
+    timeout: 8s
+    start_period: 45s
+    retries: 25
+
+x-app: &app
+  image: smart-warehouse-app:local
+  pull_policy: never
+  environment:
+    KAFKA_BOOTSTRAP: kafka:9092
+    SCHEMA_REGISTRY_URL: http://schema-registry:8081
+    CASSANDRA_HOSTS: cassandra-1,cassandra-2,cassandra-3
+    CASSANDRA_DC: datacenter1
+    HTTP_PORT: "8080"
+
+services:
+  kafka:
+    image: apache/kafka:4.1.1
+    restart: unless-stopped
+    environment:
+      CLUSTER_ID: 7SVLklGEQA6ZmHUPWbYpgw
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx384m
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 8s
+      timeout: 8s
+      start_period: 30s
+      retries: 20
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.9.10
+    restart: unless-stopped
+    depends_on:
+      kafka: {condition: service_healthy}
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: "1"
+      SCHEMA_REGISTRY_HEAP_OPTS: -Xms128m -Xmx256m
+    ports:
+      - "127.0.0.1:${SCHEMA_REGISTRY_PORT:-8081}:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/subjects"]
+      interval: 5s
+      timeout: 4s
+      start_period: 20s
+      retries: 20
+
+  cassandra-1:
+    <<: *cassandra
+    container_name: cassandra-1
+    volumes:
+      - cassandra-1-data:/var/lib/cassandra
+
+  cassandra-2:
+    <<: *cassandra
+    container_name: cassandra-2
+    depends_on:
+      cassandra-1: {condition: service_healthy}
+    volumes:
+      - cassandra-2-data:/var/lib/cassandra
+
+  cassandra-3:
+    <<: *cassandra
+    container_name: cassandra-3
+    depends_on:
+      cassandra-2: {condition: service_healthy}
+    volumes:
+      - cassandra-3-data:/var/lib/cassandra
+
+  init:
+    <<: *app
+    build: .
+    pull_policy: build
+    command: ["python", "-m", "warehouse.init"]
+    depends_on:
+      schema-registry: {condition: service_healthy}
+      cassandra-3: {condition: service_healthy}
+
+  consumer:
+    <<: *app
+    restart: unless-stopped
+    command: ["python", "-m", "warehouse.consumer"]
+    depends_on:
+      init: {condition: service_completed_successfully}
+    ports:
+      - "127.0.0.1:${CONSUMER_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://localhost:8080/health', timeout=2).close()"]
+      interval: 5s
+      timeout: 4s
+      start_period: 20s
+      retries: 5
+
+  producer:
+    <<: *app
+    profiles: [tools]
+    entrypoint: ["python", "-m", "warehouse.producer"]
+    command: ["--help"]
+    depends_on:
+      init: {condition: service_completed_successfully}
+
+  lag:
+    <<: *app
+    restart: unless-stopped
+    command: ["python", "-m", "warehouse.lag"]
+    depends_on:
+      init: {condition: service_completed_successfully}
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=1d
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
+
+  grafana:
+    image: grafana/grafana:12.3.4
+    restart: unless-stopped
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/warehouse.json
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/warehouse.json:/var/lib/grafana/dashboards/warehouse.json:ro
+    depends_on:
+      - prometheus
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
+
+volumes:
+  kafka-data:
+  cassandra-1-data:
+  cassandra-2-data:
+  cassandra-3-data:

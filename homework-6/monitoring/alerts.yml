@@ -1,0 +1,8 @@
+groups:
+  - name: warehouse
+    rules:
+      - alert: WarehouseConsumerLag
+        expr: consumer_lag{job="lag"} > 5
+        for: 10s
+        annotations:
+          summary: "Warehouse consumer is more than 5 records behind in partition {{ $labels.partition }}"

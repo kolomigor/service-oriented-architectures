@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!requirements.txt
+!warehouse/
+!schemas/
+!migrations/
+**/__pycache__/
